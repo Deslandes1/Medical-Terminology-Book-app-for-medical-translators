@@ -215,7 +215,16 @@ themes = [
     "Emergency Medicine", "Pharmacology", "Radiology", "Psychiatry", "Medical Acronyms & Abbreviations Review"
 ]
 
-# ========== CORRECTED LESSON BUILDER ==========
+# ----- SPANISH TRANSLATIONS for patient responses -----
+spanish_patient_responses = [
+    "He tenido {t0} y {t1} durante tres días.",
+    "Sí, también siento {t2} y a veces {t3}.",
+    "¿Es grave? ¿Qué significa {a0}?",
+    "Gracias, doctor. Tomaré el medicamento como me recetó.",
+    "No, entiendo. Gracias por explicar el {a1}."
+]
+
+# ========== CORRECTED LESSON BUILDER WITH NATIVE SPANISH ==========
 def build_lesson(num):
     lang = patient_languages[num-1]
     theme = themes[num-1]
@@ -225,7 +234,7 @@ def build_lesson(num):
     acronyms = [base_acronyms[(i + num * 2) % len(base_acronyms)] for i in range(5)]
     abbreviations = [base_abbreviations[(i + num * 4) % len(base_abbreviations)] for i in range(5)]
     
-    # Build conversation using the first few terms and acronyms (safe because we have at least 15 terms and 5 acronyms)
+    # Build conversation using the first few terms and acronyms
     t0, t1, t2, t3 = terms[0], terms[1], terms[2], terms[3]
     a0 = acronyms[0].split('(')[0]  # acronym without parentheses
     a1 = acronyms[1].split('(')[0] if len(acronyms) > 1 else acronyms[0].split('(')[0]
@@ -237,20 +246,57 @@ def build_lesson(num):
         f"I will prescribe medication. Please follow the treatment plan. If you feel {t3}, come back immediately.",
         f"Any questions about the {a1} or the prescription?"
     ]
-    patient_responses_en = [
-        f"I've had {t0} and {t1} for three days.",
-        f"Yes, I also feel {t2} and sometimes {t3}.",
-        f"Is it serious? What does {a0} mean?",
-        f"Thank you, doctor. I will take the medication as prescribed.",
-        f"No, I understand. Thank you for explaining the {a1}."
-    ]
+    
+    # For Spanish, use real Spanish patient lines; otherwise use English placeholders
+    if lang == "Spanish":
+        patient_responses = [
+            spanish_patient_responses[0].format(t0=t0, t1=t1),
+            spanish_patient_responses[1].format(t2=t2, t3=t3),
+            spanish_patient_responses[2].format(a0=a0),
+            spanish_patient_responses[3],
+            spanish_patient_responses[4].format(a1=a1)
+        ]
+    else:
+        # For other languages, keep English as placeholder (you can extend with real translations)
+        patient_responses = [
+            f"I've had {t0} and {t1} for three days.",
+            f"Yes, I also feel {t2} and sometimes {t3}.",
+            f"Is it serious? What does {a0} mean?",
+            f"Thank you, doctor. I will take the medication as prescribed.",
+            f"No, I understand. Thank you for explaining the {a1}."
+        ]
     
     conversation = []
-    for i in range(min(len(doctor_lines), len(patient_responses_en))):
+    for i in range(len(doctor_lines)):
         conversation.append(("D", doctor_lines[i]))
-        conversation.append(("T", f"(Interprets to {lang}) {doctor_lines[i]}"))
-        conversation.append(("P", f"(in {lang}) {patient_responses_en[i]}"))
-        conversation.append(("T", f"(Interprets to English) {patient_responses_en[i]}"))
+        # Translator interprets doctor's line to patient's language (show English as placeholder for non-Spanish)
+        if lang == "Spanish":
+            # For Spanish, we should have a real Spanish translation of the doctor's line.
+            # For simplicity, we just show the English line with a note; in production you'd add real translations.
+            # But the user only cares about patient's Spanish being native.
+            translator_to_patient = f"(Interprets to Spanish) {doctor_lines[i]}"
+        else:
+            translator_to_patient = f"(Interprets to {lang}) {doctor_lines[i]}"
+        conversation.append(("T", translator_to_patient))
+        
+        # Patient speaks in their language (real Spanish for Spanish lesson)
+        patient_line = f"(in {lang}) {patient_responses[i]}"
+        conversation.append(("P", patient_line))
+        
+        # Translator interprets patient's response back to doctor (always English)
+        # For Spanish, we provide an English translation of the Spanish response.
+        if lang == "Spanish":
+            # Map Spanish responses back to English (simple mapping)
+            english_back = [
+                f"I've had {t0} and {t1} for three days.",
+                f"Yes, I also feel {t2} and sometimes {t3}.",
+                f"Is it serious? What does {a0} mean?",
+                f"Thank you, doctor. I will take the medication as prescribed.",
+                f"No, I understand. Thank you for explaining the {a1}."
+            ][i]
+        else:
+            english_back = patient_responses[i]
+        conversation.append(("T", f"(Interprets to English) {english_back}"))
     
     return {
         "theme": theme,
@@ -330,15 +376,19 @@ with tab2:
                     st.markdown(f"**📞 Translator (to {lesson['patient_language']}):** {line}")
                     play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_english"])
         elif speaker == "P":
+            # Extract the actual patient message (remove the language prefix)
             if lesson['patient_language'] == "Spanish":
-                st.markdown(f"**🧑‍🦱 Patient (in Spanish):** {line}")
-                play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_spanish"])
+                # Remove "(in Spanish) " prefix to get clean Spanish text
+                clean_line = line.replace("(in Spanish) ", "")
+                st.markdown(f"**🧑‍🦱 Patient (in Spanish):** {clean_line}")
+                play_audio(clean_line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_spanish"])
             else:
                 st.markdown(f"**🧑‍🦱 Patient (in {lesson['patient_language']}):** {line}")
+                # For non-Spanish, use English voice (or you can add more native voices)
                 play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_english"])
         st.markdown("---")
 
-# ----- TAB 3: QUIZ -----
+# ----- TAB 3: QUIZ (unchanged) -----
 with tab3:
     st.markdown("Test your knowledge of this lesson's terminology and acronyms.")
     quiz_questions = []

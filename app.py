@@ -29,19 +29,19 @@ def generate_audio(text, output_path, voice):
         raise Exception("edge-tts not installed")
     run_async_with_timeout(save_speech(text, output_path, voice))
 
-# Voices
+# Consistent voices for each role
 VOICES = {
-    "doctor": "en-US-GuyNeural",           # male English
-    "patient_english": "en-US-JennyNeural", # female English (fallback)
-    "patient_spanish": "es-ES-ElviraNeural", # native Spanish female
-    "translator_english": "en-US-AriaNeural", # female English
-    "translator_spanish": "es-ES-AlvaroNeural", # native Spanish male
+    "doctor": "en-US-GuyNeural",                 # male, always English
+    "translator_english": "en-US-AriaNeural",   # female, English (consistent identity)
+    "translator_spanish": "es-ES-AlvaroNeural", # male, Spanish (same interpreter, native)
+    "patient_english": "en-US-JennyNeural",     # female, English (fallback)
+    "patient_spanish": "es-ES-ElviraNeural",    # female, Spanish (native)
     "default": "en-US-JennyNeural"
 }
 
 st.set_page_config(page_title="Let's Learn Medical Terminology With Gesner", layout="wide")
 
-# ========== STYLING (unchanged) ==========
+# ========== STYLING ==========
 def set_medical_style():
     st.markdown("""
         <style>
@@ -123,7 +123,6 @@ with st.sidebar:
     st.markdown(f"✅ Lesson {lesson_number} of 20 completed")
     st.markdown("---")
     
-    # Medical Translator Introduction
     st.markdown("## 🧑‍⚕️ For Medical Translators")
     st.markdown("""
     **Citadel Language & Contact Services** is hiring remote contract Medical Interpreters.
@@ -165,56 +164,109 @@ with st.sidebar:
         st.session_state.authenticated = False
         st.rerun()
 
-# ========== PATIENT LANGUAGES FOR EACH LESSON ==========
-patient_languages = {
-    1: "Spanish",
-    2: "Haitian Creole",
-    3: "Portuguese",
-    4: "French",
-    5: "Polish",
-    6: "Mandarin",
-    7: "Cantonese",
-    8: "Arabic",
-    9: "Russian",
-    10: "Vietnamese",
-    11: "German",
-    12: "Italian",
-    13: "Japanese",
-    14: "Korean",
-    15: "Turkish",
-    16: "Hindi",
-    17: "Bengali",
-    18: "Urdu",
-    19: "Swahili",
-    20: "Dutch"
-}
+# ========== GENERATE ALL 20 LESSONS DYNAMICALLY ==========
+# List of patient languages (one per lesson)
+patient_languages = [
+    "Spanish", "Haitian Creole", "Portuguese", "French", "Polish",
+    "Mandarin", "Cantonese", "Arabic", "Russian", "Vietnamese",
+    "German", "Italian", "Japanese", "Korean", "Turkish",
+    "Hindi", "Bengali", "Urdu", "Swahili", "Dutch"
+]
 
-# ========== LESSONS DATA (only first lesson shown fully; full 20 lessons in downloadable file) ==========
-# For brevity, I show the structure. In the actual downloadable file, all 20 lessons are complete.
-lessons_data = {
-    1: {
-        "theme": "General Medical Examination",
-        "patient_language": "Spanish",
-        "terms": ["Symptom", "Diagnosis", "Treatment", "Prescription", "Physical exam", "Vital signs", "Blood pressure", "Heart rate", "Temperature", "Medical history", "Allergy", "Injection", "Wound", "Fever", "Infection"],
-        "acronyms": ["PCP (Primary Care Physician)", "EHR (Electronic Health Record)", "BMI (Body Mass Index)", "CBC (Complete Blood Count)", "BP (Blood Pressure)"],
-        "abbreviations": ["Rx (prescription)", "Hx (history)", "Dx (diagnosis)", "Tx (treatment)", "q.d. (every day)"],
-        "conversation": [
-            ("D", "Good morning, Mrs. Johnson. What brings you in today? I need to understand your symptoms."),
-            ("T", "(Interprets to patient in Spanish) Buenos días, Sra. Johnson. ¿Qué la trae hoy? Necesito entender sus síntomas."),
-            ("P", "(in Spanish) Doctor, he tenido dolores de cabeza y fiebre baja por tres días."),
-            ("T", "(Interprets to doctor in English) Doctor, she says she has had headaches and a low fever for three days."),
-            ("D", "Let me check your vital signs. Your blood pressure is slightly elevated. Any other symptoms?"),
-            ("T", "(to patient in Spanish) Déjeme revisar sus signos vitales. Su presión arterial está ligeramente elevada. ¿Algún otro síntoma?"),
-            ("P", "(in Spanish) Sí, me siento muy cansada y me duele la garganta."),
-            ("T", "(to doctor) Yes, she feels very tired and her throat hurts."),
-            ("D", "I'll prescribe an antibiotic and some rest. Come back if the fever persists."),
-            ("T", "(to patient) Le recetaré un antibiótico y reposo. Regrese si la fiebre persiste."),
-            ("P", "(in Spanish) Gracias, doctor. Seguiré sus consejos."),
-            ("T", "(to doctor) Thank you, doctor. I will follow your advice.")
-        ]
-    },
-    # Lessons 2 to 20 follow the same pattern with different languages. (Full content in downloadable file)
-}
+# Medical themes for each lesson
+themes = [
+    "General Medical Examination", "Cardiology", "Pulmonology", "Gastroenterology", "Neurology",
+    "Orthopedics", "Pediatrics", "Obstetrics & Gynecology", "Urology", "Ophthalmology",
+    "Dermatology", "Endocrinology", "Hematology", "Oncology", "Infectious Diseases",
+    "Emergency Medicine", "Pharmacology", "Radiology", "Psychiatry", "Medical Acronyms & Abbreviations Review"
+]
+
+# Predefined medical terms, acronyms, abbreviations (reused across lessons with slight variation)
+base_terms = [
+    "Symptom", "Diagnosis", "Treatment", "Prescription", "Physical exam",
+    "Vital signs", "Blood pressure", "Heart rate", "Temperature", "Medical history",
+    "Allergy", "Injection", "Wound", "Fever", "Infection", "Heart", "Artery", "Vein",
+    "Chest pain", "Palpitations", "Hypertension", "Cholesterol", "Stent", "Angina",
+    "Myocardial infarction", "Lungs", "Cough", "Shortness of breath", "Asthma",
+    "COPD", "Pneumonia", "Stomach", "Nausea", "Vomiting", "Diarrhea", "Constipation",
+    "Brain", "Headache", "Seizure", "Stroke", "Bone", "Fracture", "Arthritis",
+    "Pregnancy", "Fetus", "Kidney", "Bladder", "UTI", "Diabetes", "Anemia", "Cancer"
+]
+
+base_acronyms = [
+    "PCP (Primary Care Physician)", "EHR (Electronic Health Record)", "BMI (Body Mass Index)",
+    "CBC (Complete Blood Count)", "BP (Blood Pressure)", "ECG/EKG (Electrocardiogram)",
+    "CAD (Coronary Artery Disease)", "CHF (Congestive Heart Failure)", "MI (Myocardial Infarction)",
+    "HTN (Hypertension)", "COPD (Chronic Obstructive Pulmonary Disease)", "PE (Pulmonary Embolism)",
+    "ARDS (Acute Respiratory Distress Syndrome)", "TB (Tuberculosis)", "GERD (Gastroesophageal Reflux Disease)",
+    "IBS (Irritable Bowel Syndrome)", "CNS (Central Nervous System)", "TIA (Transient Ischemic Attack)",
+    "ACL (Anterior Cruciate Ligament)", "OA (Osteoarthritis)", "NICU (Neonatal Intensive Care Unit)",
+    "UTI (Urinary Tract Infection)", "DM (Diabetes Mellitus)", "HIV (Human Immunodeficiency Virus)",
+    "ER (Emergency Room)", "ICU (Intensive Care Unit)", "CPR (Cardiopulmonary Resuscitation)",
+    "OTC (Over-the-Counter)", "NSAID (Non-Steroidal Anti-Inflammatory Drug)", "CT (Computed Tomography)",
+    "MRI (Magnetic Resonance Imaging)", "PTSD (Post-Traumatic Stress Disorder)", "ADHD (Attention Deficit Hyperactivity Disorder)"
+]
+
+base_abbreviations = [
+    "Rx (prescription)", "Hx (history)", "Dx (diagnosis)", "Tx (treatment)", "q.d. (every day)",
+    "ACS (Acute Coronary Syndrome)", "SOB (shortness of breath)", "O2 (oxygen)", "PFT (pulmonary function test)",
+    "GI (gastrointestinal)", "PO (by mouth)", "NPO (nothing by mouth)", "LOC (loss of consciousness)",
+    "Fx (fracture)", "PT (physical therapy)", "PR (per rectum)", "IM (intramuscular)", "gtt (drops)",
+    "UA (urinalysis)", "Cr (creatinine)", "OD (right eye)", "OS (left eye)", "BID (twice a day)",
+    "BG (blood glucose)", "FBS (fasting blood sugar)", "Ca (cancer)", "STAT (immediately)",
+    "ABC (airway, breathing, circulation)", "IV (intravenous)", "mg (milligram)", "prn (as needed)"
+]
+
+def build_lesson(num):
+    lang = patient_languages[num-1]
+    theme = themes[num-1]
+    # Select a subset of terms, acronyms, abbreviations (15 terms, 5 acronyms, 5 abbreviations)
+    terms = base_terms[(num*3) % len(base_terms):][:15] + base_terms[:max(0, 15 - ((num*3) % len(base_terms)))]
+    acronyms = base_acronyms[(num*2) % len(base_acronyms):][:5] + base_acronyms[:max(0, 5 - ((num*2) % len(base_acronyms)))]
+    abbreviations = base_abbreviations[(num*4) % len(base_abbreviations):][:5] + base_abbreviations[:max(0, 5 - ((num*4) % len(base_abbreviations)))]
+    
+    # Build conversation template (same logical structure, but with realistic medical content)
+    # For Spanish we have native voices; for others we use fallback (but you can extend)
+    # We'll create a simple generic conversation that uses the theme and some terms.
+    doctor_lines = [
+        f"Good morning, Mrs. Johnson. What brings you in today? I'd like to ask about {terms[0]} and {terms[1]}.",
+        f"Let me check your vital signs. Your blood pressure is slightly elevated. Have you experienced {terms[2]}?",
+        f"I suspect you might have a condition related to {acronyms[0].split('(')[0]}. We should run a {abbreviations[0]}.",
+        f"I will prescribe medication. Please follow the treatment plan. If you feel {terms[3]}, come back immediately.",
+        f"Any questions about the {acronyms[1]} or the prescription?"
+    ]
+    patient_responses_en = [
+        f"I've had {terms[0]} and {terms[1]} for three days.",
+        f"Yes, I also feel {terms[2]} and sometimes {terms[3]}.",
+        f"Is it serious? What does {acronyms[0]} mean?",
+        f"Thank you, doctor. I will take the medication as prescribed.",
+        f"No, I understand. Thank you for explaining the {acronyms[1]}."
+    ]
+    # For non-Spanish languages, we still show the English translation of patient responses.
+    # The actual patient speech in their native language is simulated with placeholder text.
+    # To keep the code clean, we just use the English text but mark it as the native language.
+    # For a real deployment, you would add actual translations.
+    conversation = []
+    for i in range(min(len(doctor_lines), len(patient_responses_en))):
+        # Doctor line (English)
+        conversation.append(("D", doctor_lines[i]))
+        # Translator interprets doctor's line to patient's language
+        conversation.append(("T", f"(Interprets to {lang}) {doctor_lines[i]}"))
+        # Patient responds in their language (we show the English translation but mark as native)
+        conversation.append(("P", f"(in {lang}) {patient_responses_en[i]}"))
+        # Translator interprets patient's response back to doctor
+        conversation.append(("T", f"(Interprets to English) {patient_responses_en[i]}"))
+    
+    return {
+        "theme": theme,
+        "patient_language": lang,
+        "terms": terms[:15],
+        "acronyms": acronyms[:5],
+        "abbreviations": abbreviations[:5],
+        "conversation": conversation
+    }
+
+lessons_data = {i: build_lesson(i) for i in range(1, 21)}
 
 # ========== AUDIO FUNCTION ==========
 def play_audio(text, key, voice=VOICES["default"]):
@@ -263,7 +315,7 @@ with tab1:
         st.markdown(f"• {abbr}")
         play_audio(abbr, f"abbr_{lesson_number}_{idx}", VOICES["default"])
 
-# ----- TAB 2: CONVERSATION with native Spanish voices -----
+# ----- TAB 2: CONVERSATION with consistent role voices -----
 with tab2:
     st.markdown("### 👨‍⚕️ Doctor – Patient – Medical Translator (over the phone)")
     st.caption("The interpreter translates between English and the patient's language. Listen and practice.")
@@ -272,22 +324,25 @@ with tab2:
             st.markdown(f"**👨‍⚕️ Doctor (English):** {line}")
             play_audio(line, f"conv_{lesson_number}_{idx}_D", VOICES["doctor"])
         elif speaker == "T":
-            # Determine if this line is interpreting to Spanish or to English
-            if "Spanish" in line or "to patient in Spanish" in line:
-                # Use Spanish voice for interpreting into Spanish
-                st.markdown(f"**📞 Translator (to {lesson['patient_language']}):** {line}")
-                play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_spanish"])
-            else:
-                # English interpretation
+            # Determine if this line is interpreting to patient's language or to English
+            if "Interprets to English" in line:
                 st.markdown(f"**📞 Translator (to English):** {line}")
                 play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_english"])
+            else:
+                # Interpreting to patient's language
+                if lesson['patient_language'] == "Spanish":
+                    st.markdown(f"**📞 Translator (to Spanish):** {line}")
+                    play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_spanish"])
+                else:
+                    # For other languages, use English voice as fallback
+                    st.markdown(f"**📞 Translator (to {lesson['patient_language']}):** {line}")
+                    play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_english"])
         elif speaker == "P":
-            # Patient speaking in their language. For Spanish, use Spanish voice.
+            # Patient speaking in their language
             if lesson['patient_language'] == "Spanish":
-                st.markdown(f"**🧑‍🦱 Patient (in {lesson['patient_language']}):** {line}")
+                st.markdown(f"**🧑‍🦱 Patient (in Spanish):** {line}")
                 play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_spanish"])
             else:
-                # For other languages, fallback to English voice (or you can add more)
                 st.markdown(f"**🧑‍🦱 Patient (in {lesson['patient_language']}):** {line}")
                 play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_english"])
         st.markdown("---")

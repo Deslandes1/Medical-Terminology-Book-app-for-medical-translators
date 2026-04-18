@@ -164,24 +164,7 @@ with st.sidebar:
         st.session_state.authenticated = False
         st.rerun()
 
-# ========== GENERATE ALL 20 LESSONS DYNAMICALLY ==========
-# List of patient languages (one per lesson)
-patient_languages = [
-    "Spanish", "Haitian Creole", "Portuguese", "French", "Polish",
-    "Mandarin", "Cantonese", "Arabic", "Russian", "Vietnamese",
-    "German", "Italian", "Japanese", "Korean", "Turkish",
-    "Hindi", "Bengali", "Urdu", "Swahili", "Dutch"
-]
-
-# Medical themes for each lesson
-themes = [
-    "General Medical Examination", "Cardiology", "Pulmonology", "Gastroenterology", "Neurology",
-    "Orthopedics", "Pediatrics", "Obstetrics & Gynecology", "Urology", "Ophthalmology",
-    "Dermatology", "Endocrinology", "Hematology", "Oncology", "Infectious Diseases",
-    "Emergency Medicine", "Pharmacology", "Radiology", "Psychiatry", "Medical Acronyms & Abbreviations Review"
-]
-
-# Predefined medical terms, acronyms, abbreviations (reused across lessons with slight variation)
+# ========== BASE MEDICAL DATA ==========
 base_terms = [
     "Symptom", "Diagnosis", "Treatment", "Prescription", "Physical exam",
     "Vital signs", "Blood pressure", "Heart rate", "Temperature", "Medical history",
@@ -217,52 +200,64 @@ base_abbreviations = [
     "ABC (airway, breathing, circulation)", "IV (intravenous)", "mg (milligram)", "prn (as needed)"
 ]
 
+# List of patient languages (one per lesson)
+patient_languages = [
+    "Spanish", "Haitian Creole", "Portuguese", "French", "Polish",
+    "Mandarin", "Cantonese", "Arabic", "Russian", "Vietnamese",
+    "German", "Italian", "Japanese", "Korean", "Turkish",
+    "Hindi", "Bengali", "Urdu", "Swahili", "Dutch"
+]
+
+themes = [
+    "General Medical Examination", "Cardiology", "Pulmonology", "Gastroenterology", "Neurology",
+    "Orthopedics", "Pediatrics", "Obstetrics & Gynecology", "Urology", "Ophthalmology",
+    "Dermatology", "Endocrinology", "Hematology", "Oncology", "Infectious Diseases",
+    "Emergency Medicine", "Pharmacology", "Radiology", "Psychiatry", "Medical Acronyms & Abbreviations Review"
+]
+
+# ========== CORRECTED LESSON BUILDER ==========
 def build_lesson(num):
     lang = patient_languages[num-1]
     theme = themes[num-1]
-    # Select a subset of terms, acronyms, abbreviations (15 terms, 5 acronyms, 5 abbreviations)
-    terms = base_terms[(num*3) % len(base_terms):][:15] + base_terms[:max(0, 15 - ((num*3) % len(base_terms)))]
-    acronyms = base_acronyms[(num*2) % len(base_acronyms):][:5] + base_acronyms[:max(0, 5 - ((num*2) % len(base_acronyms)))]
-    abbreviations = base_abbreviations[(num*4) % len(base_abbreviations):][:5] + base_abbreviations[:max(0, 5 - ((num*4) % len(base_abbreviations)))]
     
-    # Build conversation template (same logical structure, but with realistic medical content)
-    # For Spanish we have native voices; for others we use fallback (but you can extend)
-    # We'll create a simple generic conversation that uses the theme and some terms.
+    # Deterministically select 15 terms, 5 acronyms, 5 abbreviations using modulo
+    terms = [base_terms[(i + num * 3) % len(base_terms)] for i in range(15)]
+    acronyms = [base_acronyms[(i + num * 2) % len(base_acronyms)] for i in range(5)]
+    abbreviations = [base_abbreviations[(i + num * 4) % len(base_abbreviations)] for i in range(5)]
+    
+    # Build conversation using the first few terms and acronyms (safe because we have at least 15 terms and 5 acronyms)
+    t0, t1, t2, t3 = terms[0], terms[1], terms[2], terms[3]
+    a0 = acronyms[0].split('(')[0]  # acronym without parentheses
+    a1 = acronyms[1].split('(')[0] if len(acronyms) > 1 else acronyms[0].split('(')[0]
+    
     doctor_lines = [
-        f"Good morning, Mrs. Johnson. What brings you in today? I'd like to ask about {terms[0]} and {terms[1]}.",
-        f"Let me check your vital signs. Your blood pressure is slightly elevated. Have you experienced {terms[2]}?",
-        f"I suspect you might have a condition related to {acronyms[0].split('(')[0]}. We should run a {abbreviations[0]}.",
-        f"I will prescribe medication. Please follow the treatment plan. If you feel {terms[3]}, come back immediately.",
-        f"Any questions about the {acronyms[1]} or the prescription?"
+        f"Good morning, Mrs. Johnson. What brings you in today? I'd like to ask about {t0} and {t1}.",
+        f"Let me check your vital signs. Your blood pressure is slightly elevated. Have you experienced {t2}?",
+        f"I suspect you might have a condition related to {a0}. We should run a {abbreviations[0]}.",
+        f"I will prescribe medication. Please follow the treatment plan. If you feel {t3}, come back immediately.",
+        f"Any questions about the {a1} or the prescription?"
     ]
     patient_responses_en = [
-        f"I've had {terms[0]} and {terms[1]} for three days.",
-        f"Yes, I also feel {terms[2]} and sometimes {terms[3]}.",
-        f"Is it serious? What does {acronyms[0]} mean?",
+        f"I've had {t0} and {t1} for three days.",
+        f"Yes, I also feel {t2} and sometimes {t3}.",
+        f"Is it serious? What does {a0} mean?",
         f"Thank you, doctor. I will take the medication as prescribed.",
-        f"No, I understand. Thank you for explaining the {acronyms[1]}."
+        f"No, I understand. Thank you for explaining the {a1}."
     ]
-    # For non-Spanish languages, we still show the English translation of patient responses.
-    # The actual patient speech in their native language is simulated with placeholder text.
-    # To keep the code clean, we just use the English text but mark it as the native language.
-    # For a real deployment, you would add actual translations.
+    
     conversation = []
     for i in range(min(len(doctor_lines), len(patient_responses_en))):
-        # Doctor line (English)
         conversation.append(("D", doctor_lines[i]))
-        # Translator interprets doctor's line to patient's language
         conversation.append(("T", f"(Interprets to {lang}) {doctor_lines[i]}"))
-        # Patient responds in their language (we show the English translation but mark as native)
         conversation.append(("P", f"(in {lang}) {patient_responses_en[i]}"))
-        # Translator interprets patient's response back to doctor
         conversation.append(("T", f"(Interprets to English) {patient_responses_en[i]}"))
     
     return {
         "theme": theme,
         "patient_language": lang,
-        "terms": terms[:15],
-        "acronyms": acronyms[:5],
-        "abbreviations": abbreviations[:5],
+        "terms": terms,
+        "acronyms": acronyms,
+        "abbreviations": abbreviations,
         "conversation": conversation
     }
 
@@ -324,21 +319,17 @@ with tab2:
             st.markdown(f"**👨‍⚕️ Doctor (English):** {line}")
             play_audio(line, f"conv_{lesson_number}_{idx}_D", VOICES["doctor"])
         elif speaker == "T":
-            # Determine if this line is interpreting to patient's language or to English
             if "Interprets to English" in line:
                 st.markdown(f"**📞 Translator (to English):** {line}")
                 play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_english"])
             else:
-                # Interpreting to patient's language
                 if lesson['patient_language'] == "Spanish":
                     st.markdown(f"**📞 Translator (to Spanish):** {line}")
                     play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_spanish"])
                 else:
-                    # For other languages, use English voice as fallback
                     st.markdown(f"**📞 Translator (to {lesson['patient_language']}):** {line}")
                     play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator_english"])
         elif speaker == "P":
-            # Patient speaking in their language
             if lesson['patient_language'] == "Spanish":
                 st.markdown(f"**🧑‍🦱 Patient (in Spanish):** {line}")
                 play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_spanish"])
@@ -347,7 +338,7 @@ with tab2:
                 play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient_english"])
         st.markdown("---")
 
-# ----- TAB 3: QUIZ (unchanged) -----
+# ----- TAB 3: QUIZ -----
 with tab3:
     st.markdown("Test your knowledge of this lesson's terminology and acronyms.")
     quiz_questions = []

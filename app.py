@@ -12,7 +12,6 @@ try:
 except (ModuleNotFoundError, ImportError):
     EDGE_TTS_AVAILABLE = False
 
-# Helper to run async function synchronously with timeout
 def run_async_with_timeout(coro, timeout=30):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -30,17 +29,17 @@ def generate_audio(text, output_path, voice):
         raise Exception("edge-tts not installed")
     run_async_with_timeout(save_speech(text, output_path, voice))
 
-# Define voices for different speakers
+# Voices
 VOICES = {
-    "doctor": "en-US-GuyNeural",      # male voice
-    "patient": "en-US-JennyNeural",   # female voice 1
-    "translator": "en-US-AriaNeural", # female voice 2 (different)
+    "doctor": "en-US-GuyNeural",      # male
+    "patient": "en-US-JennyNeural",   # female
+    "translator": "en-US-AriaNeural", # female (different)
     "default": "en-US-JennyNeural"
 }
 
 st.set_page_config(page_title="Let's Learn Medical Terminology With Gesner", layout="wide")
 
-# ========== STYLING ==========
+# ========== STYLING (same as before) ==========
 def set_medical_style():
     st.markdown("""
         <style>
@@ -137,7 +136,7 @@ with st.sidebar:
         st.session_state.authenticated = False
         st.rerun()
 
-# ========== FULL LESSONS DATA (1 to 20) ==========
+# ========== LESSONS DATA (all conversations corrected for female patient) ==========
 lessons_data = {
     1: {
         "theme": "General Medical Examination",
@@ -145,9 +144,9 @@ lessons_data = {
         "acronyms": ["PCP (Primary Care Physician)", "EHR (Electronic Health Record)", "BMI (Body Mass Index)", "CBC (Complete Blood Count)", "BP (Blood Pressure)"],
         "abbreviations": ["Rx (prescription)", "Hx (history)", "Dx (diagnosis)", "Tx (treatment)", "q.d. (every day)"],
         "conversation": [
-            ("D", "Good morning, Mr. Johnson. What brings you in today?"),
+            ("D", "Good morning, Mrs. Johnson. What brings you in today?"),
             ("P", "Doctor, I've been having headaches and a low fever for three days."),
-            ("T", "(on phone) Doctor says: Good morning, Mr. Johnson. What brings you in today? Patient says: Doctor, I've been having headaches and a low fever for three days."),
+            ("T", "(on phone) Doctor says: Good morning, Mrs. Johnson. What brings you in today? Patient says: Doctor, I've been having headaches and a low fever for three days."),
             ("D", "Let me check your vital signs. Your blood pressure is slightly elevated. Any other symptoms?"),
             ("P", "Yes, I feel very tired and my throat hurts."),
             ("T", "(on phone) Doctor: Let me check your vital signs. Your blood pressure is slightly elevated. Any other symptoms? Patient: Yes, I feel very tired and my throat hurts."),
@@ -162,9 +161,9 @@ lessons_data = {
         "acronyms": ["ECG/EKG (Electrocardiogram)", "CAD (Coronary Artery Disease)", "CHF (Congestive Heart Failure)", "MI (Myocardial Infarction)", "HTN (Hypertension)"],
         "abbreviations": ["ACS (Acute Coronary Syndrome)", "CVD (Cardiovascular Disease)", "LV (Left Ventricle)", "RV (Right Ventricle)", "CCU (Cardiac Care Unit)"],
         "conversation": [
-            ("D", "Your ECG shows some irregularities. Have you ever had chest pain?"),
+            ("D", "Mrs. Johnson, your ECG shows some irregularities. Have you ever had chest pain?"),
             ("P", "Yes, when I walk fast, I feel pressure in my chest."),
-            ("T", "(on phone) Doctor: Your ECG shows some irregularities. Have you ever had chest pain? Patient: Yes, when I walk fast, I feel pressure in my chest."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, your ECG shows some irregularities. Have you ever had chest pain? Patient: Yes, when I walk fast, I feel pressure in my chest."),
             ("D", "That could be angina. I want you to have a stress test and an echocardiogram."),
             ("P", "Is it serious, doctor?"),
             ("T", "(on phone) Doctor: That could be angina. I want you to have a stress test and an echocardiogram. Patient: Is it serious, doctor?"),
@@ -179,9 +178,9 @@ lessons_data = {
         "acronyms": ["COPD (Chronic Obstructive Pulmonary Disease)", "PE (Pulmonary Embolism)", "ARDS (Acute Respiratory Distress Syndrome)", "TB (Tuberculosis)", "OSA (Obstructive Sleep Apnea)"],
         "abbreviations": ["SOB (shortness of breath)", "O2 (oxygen)", "PFT (pulmonary function test)", "ABG (arterial blood gas)", "RR (respiratory rate)"],
         "conversation": [
-            ("D", "You've been coughing for three weeks. Any shortness of breath?"),
+            ("D", "You've been coughing for three weeks, Mrs. Johnson. Any shortness of breath?"),
             ("P", "Yes, especially when I climb stairs. I also wheeze at night."),
-            ("T", "(on phone) Doctor: You've been coughing for three weeks. Any shortness of breath? Patient: Yes, especially when I climb stairs. I also wheeze at night."),
+            ("T", "(on phone) Doctor: You've been coughing for three weeks, Mrs. Johnson. Any shortness of breath? Patient: Yes, especially when I climb stairs. I also wheeze at night."),
             ("D", "I suspect asthma or COPD. We'll do a spirometry test today."),
             ("P", "What does that involve?"),
             ("T", "(on phone) Doctor: I suspect asthma or COPD. We'll do a spirometry test today. Patient: What does that involve?"),
@@ -196,9 +195,9 @@ lessons_data = {
         "acronyms": ["GERD (Gastroesophageal Reflux Disease)", "IBS (Irritable Bowel Syndrome)", "IBD (Inflammatory Bowel Disease)", "UGI (Upper Gastrointestinal)", "NG (Nasogastric)"],
         "abbreviations": ["GI (gastrointestinal)", "PO (by mouth)", "NPO (nothing by mouth)", "BM (bowel movement)", "EUS (endoscopic ultrasound)"],
         "conversation": [
-            ("D", "Where is the pain? Can you point to it?"),
+            ("D", "Where is the pain, Mrs. Johnson? Can you point to it?"),
             ("P", "It's in my upper belly, especially after eating. Sometimes I feel bloated."),
-            ("T", "(on phone) Doctor: Where is the pain? Can you point to it? Patient: It's in my upper belly, especially after eating. Sometimes I feel bloated."),
+            ("T", "(on phone) Doctor: Where is the pain, Mrs. Johnson? Can you point to it? Patient: It's in my upper belly, especially after eating. Sometimes I feel bloated."),
             ("D", "It could be gastritis or an ulcer. Have you taken any medication?"),
             ("P", "I tried antacids, but they only help a little."),
             ("T", "(on phone) Doctor: It could be gastritis or an ulcer. Have you taken any medication? Patient: I tried antacids, but they only help a little."),
@@ -213,9 +212,9 @@ lessons_data = {
         "acronyms": ["CNS (Central Nervous System)", "PNS (Peripheral Nervous System)", "TIA (Transient Ischemic Attack)", "ALS (Amyotrophic Lateral Sclerosis)", "EEG (Electroencephalogram)"],
         "abbreviations": ["LOC (loss of consciousness)", "GCS (Glasgow Coma Scale)", "ICP (intracranial pressure)", "CSF (cerebrospinal fluid)", "MS (multiple sclerosis)"],
         "conversation": [
-            ("D", "You mentioned numbness in your left hand. When did it start?"),
+            ("D", "Mrs. Johnson, you mentioned numbness in your left hand. When did it start?"),
             ("P", "About a week ago. Now my fingers feel tingly too."),
-            ("T", "(on phone) Doctor: You mentioned numbness in your left hand. When did it start? Patient: About a week ago. Now my fingers feel tingly too."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you mentioned numbness in your left hand. When did it start? Patient: About a week ago. Now my fingers feel tingly too."),
             ("D", "I need to check your reflexes and order an MRI to rule out multiple sclerosis or a pinched nerve."),
             ("P", "Is it very serious?"),
             ("T", "(on phone) Doctor: I need to check your reflexes and order an MRI to rule out multiple sclerosis or a pinched nerve. Patient: Is it very serious?"),
@@ -230,9 +229,9 @@ lessons_data = {
         "acronyms": ["ACL (Anterior Cruciate Ligament)", "PCL (Posterior Cruciate Ligament)", "OA (Osteoarthritis)", "RA (Rheumatoid Arthritis)", "ROM (Range of Motion)"],
         "abbreviations": ["Fx (fracture)", "ORIF (open reduction internal fixation)", "PT (physical therapy)", "NWB (non-weight bearing)", "WBAT (weight bearing as tolerated)"],
         "conversation": [
-            ("D", "How did you injure your knee?"),
+            ("D", "How did you injure your knee, Mrs. Johnson?"),
             ("P", "I was playing soccer and twisted it. Now it hurts to walk."),
-            ("T", "(on phone) Doctor: How did you injure your knee? Patient: I was playing soccer and twisted it. Now it hurts to walk."),
+            ("T", "(on phone) Doctor: How did you injure your knee, Mrs. Johnson? Patient: I was playing soccer and twisted it. Now it hurts to walk."),
             ("D", "Let me examine. I think you may have torn your ACL. We'll need an MRI."),
             ("P", "Will I need surgery?"),
             ("T", "(on phone) Doctor: Let me examine. I think you may have torn your ACL. We'll need an MRI. Patient: Will I need surgery?"),
@@ -247,9 +246,9 @@ lessons_data = {
         "acronyms": ["AAP (American Academy of Pediatrics)", "NICU (Neonatal Intensive Care Unit)", "PICU (Pediatric Intensive Care Unit)", "RSV (Respiratory Syncytial Virus)", "VUR (Vesicoureteral Reflux)"],
         "abbreviations": ["PO (by mouth)", "PR (per rectum)", "IM (intramuscular)", "SC (subcutaneous)", "gtt (drops)"],
         "conversation": [
-            ("D", "How long has your daughter had a fever?"),
+            ("D", "How long has your daughter had a fever, Mrs. Johnson?"),
             ("P", "Two days. She also has a runny nose and cough."),
-            ("T", "(on phone) Doctor: How long has your daughter had a fever? Patient: Two days. She also has a runny nose and cough."),
+            ("T", "(on phone) Doctor: How long has your daughter had a fever, Mrs. Johnson? Patient: Two days. She also has a runny nose and cough."),
             ("D", "Let me check her ears and throat. It looks like a viral infection. Give her plenty of fluids and acetaminophen for fever."),
             ("P", "When should I bring her back?"),
             ("T", "(on phone) Doctor: Let me check her ears and throat. It looks like a viral infection. Give her plenty of fluids and acetaminophen for fever. Patient: When should I bring her back?"),
@@ -264,9 +263,9 @@ lessons_data = {
         "acronyms": ["OB (Obstetrics)", "GYN (Gynecology)", "PID (Pelvic Inflammatory Disease)", "PCOS (Polycystic Ovary Syndrome)", "IUGR (Intrauterine Growth Restriction)"],
         "abbreviations": ["G (gravida)", "P (para)", "LMP (last menstrual period)", "EDD (estimated due date)", "C/S (cesarean section)"],
         "conversation": [
-            ("D", "Congratulations on your pregnancy. Have you had any bleeding or pain?"),
+            ("D", "Congratulations on your pregnancy, Mrs. Johnson. Have you had any bleeding or pain?"),
             ("P", "No, but I feel very tired and nauseous."),
-            ("T", "(on phone) Doctor: Congratulations on your pregnancy. Have you had any bleeding or pain? Patient: No, but I feel very tired and nauseous."),
+            ("T", "(on phone) Doctor: Congratulations on your pregnancy, Mrs. Johnson. Have you had any bleeding or pain? Patient: No, but I feel very tired and nauseous."),
             ("D", "That's normal in the first trimester. Let's schedule your first ultrasound to check the baby's heartbeat."),
             ("P", "When will I feel the baby move?"),
             ("T", "(on phone) Doctor: That's normal in the first trimester. Let's schedule your first ultrasound to check the baby's heartbeat. Patient: When will I feel the baby move?"),
@@ -281,9 +280,9 @@ lessons_data = {
         "acronyms": ["UTI (Urinary Tract Infection)", "BPH (Benign Prostatic Hyperplasia)", "ESRD (End Stage Renal Disease)", "PKD (Polycystic Kidney Disease)", "TURP (Transurethral Resection of Prostate)"],
         "abbreviations": ["UA (urinalysis)", "Cr (creatinine)", "BUN (blood urea nitrogen)", "IVP (intravenous pyelogram)", "VCUG (voiding cystourethrogram)"],
         "conversation": [
-            ("D", "You said it burns when you urinate. How long has this been happening?"),
+            ("D", "Mrs. Johnson, you said it burns when you urinate. How long has this been happening?"),
             ("P", "About three days. I also feel the urge to go frequently."),
-            ("T", "(on phone) Doctor: You said it burns when you urinate. How long has this been happening? Patient: About three days. I also feel the urge to go frequently."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you said it burns when you urinate. How long has this been happening? Patient: About three days. I also feel the urge to go frequently."),
             ("D", "It sounds like a urinary tract infection. I'll order a urinalysis and prescribe antibiotics."),
             ("P", "Can I get a kidney stone from this?"),
             ("T", "(on phone) Doctor: It sounds like a urinary tract infection. I'll order a urinalysis and prescribe antibiotics. Patient: Can I get a kidney stone from this?"),
@@ -298,9 +297,9 @@ lessons_data = {
         "acronyms": ["AMD (Age-related Macular Degeneration)", "IOP (Intraocular Pressure)", "OCT (Optical Coherence Tomography)", "PRK (Photorefractive Keratectomy)", "LASIK (Laser-Assisted In Situ Keratomileusis)"],
         "abbreviations": ["OD (right eye)", "OS (left eye)", "OU (both eyes)", "VA (visual acuity)", "VF (visual field)"],
         "conversation": [
-            ("D", "You mentioned blurry vision. Is it near or far?"),
+            ("D", "Mrs. Johnson, you mentioned blurry vision. Is it near or far?"),
             ("P", "Both, but especially when reading. I also see floaters."),
-            ("T", "(on phone) Doctor: You mentioned blurry vision. Is it near or far? Patient: Both, but especially when reading. I also see floaters."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you mentioned blurry vision. Is it near or far? Patient: Both, but especially when reading. I also see floaters."),
             ("D", "I'll check your intraocular pressure and examine your retina. It could be early cataracts or simply needing glasses."),
             ("P", "Do I need surgery?"),
             ("T", "(on phone) Doctor: I'll check your intraocular pressure and examine your retina. It could be early cataracts or simply needing glasses. Patient: Do I need surgery?"),
@@ -315,9 +314,9 @@ lessons_data = {
         "acronyms": ["BCC (Basal Cell Carcinoma)", "SCC (Squamous Cell Carcinoma)", "MM (Malignant Melanoma)", "HER2 (Human Epidermal Growth Factor Receptor 2)", "PUVA (Psoralen + UVA)"],
         "abbreviations": ["ID (intradermal)", "SC (subcutaneous)", "BID (twice a day)", "TID (three times a day)", "QHS (every night at bedtime)"],
         "conversation": [
-            ("D", "How long have you had this rash on your arm?"),
+            ("D", "How long have you had this rash on your arm, Mrs. Johnson?"),
             ("P", "About two weeks. It itches a lot and sometimes weeps fluid."),
-            ("T", "(on phone) Doctor: How long have you had this rash on your arm? Patient: About two weeks. It itches a lot and sometimes weeps fluid."),
+            ("T", "(on phone) Doctor: How long have you had this rash on your arm, Mrs. Johnson? Patient: About two weeks. It itches a lot and sometimes weeps fluid."),
             ("D", "It looks like eczema. Have you changed any soaps or lotions recently?"),
             ("P", "Yes, I started using a new body wash."),
             ("T", "(on phone) Doctor: It looks like eczema. Have you changed any soaps or lotions recently? Patient: Yes, I started using a new body wash."),
@@ -325,7 +324,8 @@ lessons_data = {
             ("P", "Will it go away completely?"),
             ("T", "(on phone) Doctor: Stop using it. I'll prescribe a topical steroid cream. Apply twice a day. Patient: Will it go away completely?"),
             ("D", "With treatment, yes. But eczema can flare up again. Keep your skin moisturized."),
-            ("T", "(on phone) Doctor: With treatment, yes. But eczema can flare up again. Keep your skin moisturized.")
+            ("P", "Thank you, doctor."),
+            ("T", "(on phone) Doctor: With treatment, yes. But eczema can flare up again. Keep your skin moisturized. Patient: Thank you, doctor.")
         ]
     },
     12: {
@@ -334,9 +334,9 @@ lessons_data = {
         "acronyms": ["DM (Diabetes Mellitus)", "T1DM (Type 1 Diabetes Mellitus)", "T2DM (Type 2 Diabetes Mellitus)", "HbA1c (Hemoglobin A1c)", "TSH (Thyroid Stimulating Hormone)"],
         "abbreviations": ["BG (blood glucose)", "FBS (fasting blood sugar)", "RBS (random blood sugar)", "T3 (triiodothyronine)", "T4 (thyroxine)"],
         "conversation": [
-            ("D", "Your blood sugar levels are high. Have you been feeling very thirsty or urinating frequently?"),
+            ("D", "Mrs. Johnson, your blood sugar levels are high. Have you been feeling very thirsty or urinating frequently?"),
             ("P", "Yes, both. I also feel tired all the time."),
-            ("T", "(on phone) Doctor: Your blood sugar levels are high. Have you been feeling very thirsty or urinating frequently? Patient: Yes, both. I also feel tired all the time."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, your blood sugar levels are high. Have you been feeling very thirsty or urinating frequently? Patient: Yes, both. I also feel tired all the time."),
             ("D", "You likely have type 2 diabetes. We'll start metformin and discuss diet changes."),
             ("P", "Is this reversible?"),
             ("T", "(on phone) Doctor: You likely have type 2 diabetes. We'll start metformin and discuss diet changes. Patient: Is this reversible?"),
@@ -351,9 +351,9 @@ lessons_data = {
         "acronyms": ["RBC (Red Blood Cell)", "WBC (White Blood Cell)", "Hgb (Hemoglobin)", "Hct (Hematocrit)", "PT (Prothrombin Time)", "INR (International Normalized Ratio)"],
         "abbreviations": ["CBC (complete blood count)", "DIC (disseminated intravascular coagulation)", "ITP (immune thrombocytopenic purpura)", "TTP (thrombotic thrombocytopenic purpura)", "ALL (acute lymphoblastic leukemia)"],
         "conversation": [
-            ("D", "Your blood test shows low hemoglobin. Have you been feeling weak or dizzy?"),
+            ("D", "Mrs. Johnson, your blood test shows low hemoglobin. Have you been feeling weak or dizzy?"),
             ("P", "Yes, and my skin looks pale."),
-            ("T", "(on phone) Doctor: Your blood test shows low hemoglobin. Have you been feeling weak or dizzy? Patient: Yes, and my skin looks pale."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, your blood test shows low hemoglobin. Have you been feeling weak or dizzy? Patient: Yes, and my skin looks pale."),
             ("D", "You have iron-deficiency anemia. I'll prescribe iron supplements and ask you to eat more red meat and leafy greens."),
             ("P", "Could it be something more serious?"),
             ("T", "(on phone) Doctor: You have iron-deficiency anemia. I'll prescribe iron supplements and ask you to eat more red meat and leafy greens. Patient: Could it be something more serious?"),
@@ -368,9 +368,9 @@ lessons_data = {
         "acronyms": ["NSCLC (Non-Small Cell Lung Cancer)", "SCLC (Small Cell Lung Cancer)", "BRCA (Breast Cancer Gene)", "PSA (Prostate Specific Antigen)", "HPV (Human Papillomavirus)"],
         "abbreviations": ["Ca (cancer)", "mets (metastases)", "RT (radiation therapy)", "CTx (chemotherapy)", "BMT (bone marrow transplant)"],
         "conversation": [
-            ("D", "The biopsy results show a malignant tumor in your breast."),
+            ("D", "Mrs. Johnson, the biopsy results show a malignant tumor in your breast."),
             ("P", "Oh no. What are my options?"),
-            ("T", "(on phone) Doctor: The biopsy results show a malignant tumor in your breast. Patient: Oh no. What are my options?"),
+            ("T", "(on phone) Doctor: Mrs. Johnson, the biopsy results show a malignant tumor in your breast. Patient: Oh no. What are my options?"),
             ("D", "We have several: surgery, chemotherapy, radiation, or a combination. I've referred you to an oncologist."),
             ("P", "Will I lose my hair?"),
             ("T", "(on phone) Doctor: We have several: surgery, chemotherapy, radiation, or a combination. I've referred you to an oncologist. Patient: Will I lose my hair?"),
@@ -385,9 +385,9 @@ lessons_data = {
         "acronyms": ["HIV (Human Immunodeficiency Virus)", "AIDS (Acquired Immunodeficiency Syndrome)", "COVID-19 (Coronavirus Disease 2019)", "MRSA (Methicillin-resistant Staphylococcus aureus)", "TB (Tuberculosis)"],
         "abbreviations": ["ID (infectious disease)", "IV (intravenous)", "PO (oral)", "IM (intramuscular)", "STAT (immediately)"],
         "conversation": [
-            ("D", "You have a bacterial infection in your lungs. We need to start antibiotics."),
+            ("D", "Mrs. Johnson, you have a bacterial infection in your lungs. We need to start antibiotics."),
             ("P", "Is it contagious? My family is at home."),
-            ("T", "(on phone) Doctor: You have a bacterial infection in your lungs. We need to start antibiotics. Patient: Is it contagious? My family is at home."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you have a bacterial infection in your lungs. We need to start antibiotics. Patient: Is it contagious? My family is at home."),
             ("D", "Yes, especially through coughing. I recommend you wear a mask and wash hands frequently."),
             ("P", "How long until I feel better?"),
             ("T", "(on phone) Doctor: Yes, especially through coughing. I recommend you wear a mask and wash hands frequently. Patient: How long until I feel better?"),
@@ -402,15 +402,15 @@ lessons_data = {
         "acronyms": ["ER (Emergency Room)", "EMS (Emergency Medical Services)", "ICU (Intensive Care Unit)", "CPR (Cardiopulmonary Resuscitation)", "MI (Myocardial Infarction)"],
         "abbreviations": ["ABC (airway, breathing, circulation)", "LOC (loss of consciousness)", "GCS (Glasgow Coma Scale)", "ETT (endotracheal tube)", "IV (intravenous)"],
         "conversation": [
-            ("D", "He was in a car accident. We need a cervical collar and IV access."),
-            ("P", "I'm the patient's wife. Is he going to be okay?"),
-            ("T", "(on phone) Doctor: He was in a car accident. We need a cervical collar and IV access. Patient's wife: I'm the patient's wife. Is he going to be okay?"),
-            ("D", "He has a fractured leg and possible concussion. We're doing a CT scan now."),
-            ("P", "Can I see him?"),
-            ("T", "(on phone) Doctor: He has a fractured leg and possible concussion. We're doing a CT scan now. Patient's wife: Can I see him?"),
-            ("D", "Not yet. Please wait in the waiting room. We'll update you as soon as we know more."),
+            ("D", "Mrs. Johnson, you were in a car accident. We need a cervical collar and IV access."),
+            ("P", "I'm the patient. Is my daughter going to be okay? (She was with me)"),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you were in a car accident. We need a cervical collar and IV access. Patient: I'm the patient. Is my daughter going to be okay?"),
+            ("D", "You have a fractured leg and possible concussion. We're doing a CT scan now. Your daughter is being checked separately."),
+            ("P", "Can I see her?"),
+            ("T", "(on phone) Doctor: You have a fractured leg and possible concussion. We're doing a CT scan now. Your daughter is being checked separately. Patient: Can I see her?"),
+            ("D", "Not yet. Please wait. We'll update you as soon as we know more."),
             ("P", "Thank you, doctor."),
-            ("T", "(on phone) Doctor: Not yet. Please wait in the waiting room. We'll update you as soon as we know more. Patient's wife: Thank you, doctor.")
+            ("T", "(on phone) Doctor: Not yet. Please wait. We'll update you as soon as we know more. Patient: Thank you, doctor.")
         ]
     },
     17: {
@@ -419,9 +419,9 @@ lessons_data = {
         "acronyms": ["OTC (Over-the-Counter)", "NSAID (Non-Steroidal Anti-Inflammatory Drug)", "ACE (Angiotensin-Converting Enzyme)", "ARB (Angiotensin II Receptor Blocker)", "SSRI (Selective Serotonin Reuptake Inhibitor)"],
         "abbreviations": ["mg (milligram)", "mL (milliliter)", "g (gram)", "po (by mouth)", "prn (as needed)"],
         "conversation": [
-            ("D", "I'm prescribing lisinopril for your blood pressure. Take one tablet daily."),
+            ("D", "Mrs. Johnson, I'm prescribing lisinopril for your blood pressure. Take one tablet daily."),
             ("P", "What are the common side effects?"),
-            ("T", "(on phone) Doctor: I'm prescribing lisinopril for your blood pressure. Take one tablet daily. Patient: What are the common side effects?"),
+            ("T", "(on phone) Doctor: Mrs. Johnson, I'm prescribing lisinopril for your blood pressure. Take one tablet daily. Patient: What are the common side effects?"),
             ("D", "Some people get a dry cough or dizziness. If that happens, call me."),
             ("P", "Can I take it with my other medications?"),
             ("T", "(on phone) Doctor: Some people get a dry cough or dizziness. If that happens, call me. Patient: Can I take it with my other medications?"),
@@ -436,9 +436,9 @@ lessons_data = {
         "acronyms": ["CT (Computed Tomography)", "MRI (Magnetic Resonance Imaging)", "PET (Positron Emission Tomography)", "SPECT (Single Photon Emission Computed Tomography)", "IVP (Intravenous Pyelogram)"],
         "abbreviations": ["CXR (chest X-ray)", "KUB (kidney, ureter, bladder)", "US (ultrasound)", "MRA (magnetic resonance angiography)", "CTA (CT angiography)"],
         "conversation": [
-            ("D", "We need a CT scan of your abdomen to see the source of the pain."),
+            ("D", "Mrs. Johnson, we need a CT scan of your abdomen to see the source of the pain."),
             ("P", "Does it involve radiation?"),
-            ("T", "(on phone) Doctor: We need a CT scan of your abdomen to see the source of the pain. Patient: Does it involve radiation?"),
+            ("T", "(on phone) Doctor: Mrs. Johnson, we need a CT scan of your abdomen to see the source of the pain. Patient: Does it involve radiation?"),
             ("D", "Yes, a small amount. But the benefit of finding the problem outweighs the risk."),
             ("P", "Do I need to drink anything?"),
             ("T", "(on phone) Doctor: Yes, a small amount. But the benefit of finding the problem outweighs the risk. Patient: Do I need to drink anything?"),
@@ -453,9 +453,9 @@ lessons_data = {
         "acronyms": ["PTSD (Post-Traumatic Stress Disorder)", "OCD (Obsessive-Compulsive Disorder)", "ADHD (Attention Deficit Hyperactivity Disorder)", "GAD (Generalized Anxiety Disorder)", "ECT (Electroconvulsive Therapy)"],
         "abbreviations": ["CBT (cognitive behavioral therapy)", "SSRI (selective serotonin reuptake inhibitor)", "MAOI (monoamine oxidase inhibitor)", "SNRI (serotonin-norepinephrine reuptake inhibitor)", "TCA (tricyclic antidepressant)"],
         "conversation": [
-            ("D", "You mentioned feeling sad and losing interest in things you used to enjoy. How long?"),
+            ("D", "Mrs. Johnson, you mentioned feeling sad and losing interest in things you used to enjoy. How long?"),
             ("P", "About three months. I also have trouble sleeping and feel worthless."),
-            ("T", "(on phone) Doctor: You mentioned feeling sad and losing interest in things you used to enjoy. How long? Patient: About three months. I also have trouble sleeping and feel worthless."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, you mentioned feeling sad and losing interest in things you used to enjoy. How long? Patient: About three months. I also have trouble sleeping and feel worthless."),
             ("D", "This sounds like major depression. I recommend therapy and possibly an antidepressant."),
             ("P", "Will I have to take it forever?"),
             ("T", "(on phone) Doctor: This sounds like major depression. I recommend therapy and possibly an antidepressant. Patient: Will I have to take it forever?"),
@@ -466,22 +466,22 @@ lessons_data = {
     },
     20: {
         "theme": "Medical Acronyms & Abbreviations Review",
-        "terms": ["Review of all previous terms: symptom, diagnosis, treatment, prescription, vital signs, blood pressure, heart rate, temperature, allergy, infection, heart, artery, vein, chest pain, hypertension, cholesterol, angina, MI, ECG, lungs, cough, shortness of breath, asthma, COPD, pneumonia, stomach, nausea, vomiting, diarrhea, constipation, brain, headache, seizure, stroke, bone, fracture, arthritis, pregnancy, fetus, kidney, UTI, diabetes, anemia, cancer, virus, antibiotic, vaccine, ER, ICU, CPR, medication, side effect, X-ray, CT, MRI, depression, anxiety"],
+        "terms": ["Review of all previous terms"],
         "acronyms": ["PCP, EHR, BMI, CBC, BP, ECG, CAD, CHF, MI, HTN, COPD, PE, ARDS, TB, OSA, GERD, IBS, IBD, CNS, TIA, ALS, EEG, ACL, OA, RA, AAP, NICU, PICU, RSV, OB, GYN, PID, PCOS, UTI, BPH, ESRD, AMD, IOP, OCT, LASIK, BCC, SCC, MM, DM, T1DM, T2DM, HbA1c, TSH, RBC, WBC, Hgb, Hct, PT, INR, HIV, AIDS, COVID, MRSA, ER, EMS, ICU, CPR, OTC, NSAID, ACE, ARB, SSRI, CT, MRI, PET, PTSD, OCD, ADHD, GAD, ECT"],
         "abbreviations": ["Rx, Hx, Dx, Tx, q.d., ACS, CVD, LV, RV, CCU, SOB, O2, PFT, ABG, RR, GI, PO, NPO, BM, EUS, LOC, GCS, ICP, CSF, Fx, ORIF, PT, NWB, WBAT, PR, IM, SC, gtt, G, P, LMP, EDD, C/S, UA, Cr, BUN, IVP, VCUG, OD, OS, OU, VA, VF, ID, BID, TID, QHS, BG, FBS, RBS, T3, T4, Ca, mets, RT, CTx, BMT, STAT, ABC, ETT, IV, mg, mL, g, prn, CXR, KUB, US, MRA, CTA, CBT, MAOI, SNRI, TCA"],
         "conversation": [
-            ("D", "Today we'll review everything you've learned. What does 'BP' stand for?"),
+            ("D", "Mrs. Johnson, today we'll review everything you've learned. What does 'BP' stand for?"),
             ("P", "Blood pressure."),
-            ("T", "(on phone) Doctor: Today we'll review everything you've learned. What does 'BP' stand for? Patient: Blood pressure."),
+            ("T", "(on phone) Doctor: Mrs. Johnson, today we'll review everything you've learned. What does 'BP' stand for? Patient: Blood pressure."),
             ("D", "Correct. And what is the normal range for adult BP?"),
             ("P", "Around 120/80 mmHg."),
             ("T", "(on phone) Doctor: Correct. And what is the normal range for adult BP? Patient: Around 120/80 mmHg."),
             ("D", "Excellent. Now, what does 'STAT' mean?"),
             ("P", "Immediately – used in emergencies."),
             ("T", "(on phone) Doctor: Excellent. Now, what does 'STAT' mean? Patient: Immediately – used in emergencies."),
-            ("D", "You have mastered medical terminology. Congratulations, translator!"),
+            ("D", "You have mastered medical terminology. Congratulations, Mrs. Johnson!"),
             ("P", "Thank you, doctor. I feel confident now."),
-            ("T", "(on phone) Doctor: You have mastered medical terminology. Congratulations, translator! Patient: Thank you, doctor. I feel confident now.")
+            ("T", "(on phone) Doctor: You have mastered medical terminology. Congratulations, Mrs. Johnson! Patient: Thank you, doctor. I feel confident now.")
         ]
     }
 }
@@ -511,7 +511,7 @@ st.markdown(f"## 📖 Lesson {lesson_number}: {lesson['theme']}")
 
 tab1, tab2, tab3, tab4 = st.tabs(["📚 Terminology", "🗣️ Conversation", "❓ Quiz", "📝 Notes"])
 
-# ----- TAB 1: TERMINOLOGY (single voice) -----
+# ----- TAB 1: TERMINOLOGY -----
 with tab1:
     st.subheader("🏥 Medical Terms")
     cols = st.columns(3)
@@ -543,15 +543,14 @@ with tab2:
         elif speaker == "P":
             st.markdown(f"**🧑‍🦱 Patient:** {line}")
             play_audio(line, f"conv_{lesson_number}_{idx}_P", VOICES["patient"])
-        else:  # T = Translator
+        else:
             st.markdown(f"**📞 Translator (on phone):** {line}")
             play_audio(line, f"conv_{lesson_number}_{idx}_T", VOICES["translator"])
         st.markdown("---")
 
-# ----- TAB 3: QUIZ (default voice) -----
+# ----- TAB 3: QUIZ -----
 with tab3:
     st.markdown("Test your knowledge of this lesson's terminology and acronyms.")
-    # Generate quiz questions dynamically
     quiz_questions = []
     sample_terms = random.sample(lesson["terms"], min(3, len(lesson["terms"])))
     for term in sample_terms:
@@ -562,9 +561,13 @@ with tab3:
         })
     sample_acros = random.sample(lesson["acronyms"], min(2, len(lesson["acronyms"])))
     for acro in sample_acros:
-        parts = acro.split(" (")
-        acronym = parts[0]
-        full = parts[1].rstrip(")")
+        if "(" in acro:
+            parts = acro.split(" (")
+            acronym = parts[0]
+            full = parts[1].rstrip(")")
+        else:
+            acronym = acro
+            full = acro
         quiz_questions.append({
             "question": f"What does the acronym '{acronym}' stand for?",
             "options": [full, "A medical test", "A type of drug", "A hospital unit"],
